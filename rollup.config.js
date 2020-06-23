@@ -2,22 +2,28 @@ import typescript from 'rollup-plugin-typescript2';
 import del from 'rollup-plugin-delete';
 import pkg from './package.json';
 
-export default [
-  {
-    input: 'src/index.ts',
+
+function makeConfig(componentName) {
+  return {
+    input: `src/${componentName}/index.tsx`,
     output: [
       {
-        file: 'playground/src/component-lib/index.js',
+        file: `playground/src/component-lib/${componentName}/index.js`,
         format: 'esm',
         banner: '/* eslint-disable */',
       },
-      { file: pkg.main, format: 'cjs' },
-      { file: pkg.module, format: 'esm' },
+      { file: `dist/${componentName}/index.cjs.js`, format: 'cjs' },
+      { file: `dist/${componentName}/index.esm.js`, format: 'esm' },
     ],
     plugins: [
-      del({ targets: ['dist/*', 'playground/src/component-lib'] }),
+      del({ targets: [`dist/${componentName}/*`, 'playground/src/component-lib'] }),
       typescript(),
     ],
     external: Object.keys(pkg.peerDependencies || {}),
-  },
-];
+  };
+}
+
+export default [
+  'my-component',
+  'another-component'
+].map(makeConfig);
