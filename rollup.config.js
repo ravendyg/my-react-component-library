@@ -3,27 +3,45 @@ import del from 'rollup-plugin-delete';
 import pkg from './package.json';
 
 
+const override = { compilerOptions: { declaration: false } };
+
 function makeConfig(componentName) {
   return {
     input: `src/${componentName}/index.tsx`,
     output: [
-      {
-        file: `playground/src/component-lib/${componentName}/index.js`,
-        format: 'esm',
-        banner: '/* eslint-disable */',
-      },
-      { file: `dist/${componentName}/index.cjs.js`, format: 'cjs' },
-      { file: `dist/${componentName}/index.esm.js`, format: 'esm' },
+      { file: `dist/${componentName}/index.js`, format: 'cjs' },
     ],
     plugins: [
-      del({ targets: [`dist/${componentName}/*`, 'playground/src/component-lib'] }),
-      typescript(),
+      typescript({
+        tsconfigOverride: override,
+      }),
     ],
     external: Object.keys(pkg.peerDependencies || {}),
   };
 }
 
 export default [
-  'my-component',
-  'another-component'
-].map(makeConfig);
+  // declarations and everything together
+  {
+    input: 'src/index.ts',
+    output: [
+      {
+        file: 'playground/src/component-lib/index.js',
+        format: 'esm',
+        banner: '/* eslint-disable */',
+      },
+      { file: pkg.main, format: 'cjs' },
+      { file: pkg.module, format: 'esm' },
+    ],
+    plugins: [
+      del({ targets: ['dist/*', 'playground/src/component-lib'] }),
+      typescript(),
+    ],
+    external: Object.keys(pkg.peerDependencies || {}),
+  },
+  // separate components
+  ...[
+    'my-component',
+    'another-component'
+  ].map(makeConfig)
+];
