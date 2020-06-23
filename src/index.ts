@@ -1,3 +1,7 @@
+import { AnotherComponent } from './another-component';
 import { MyComponent } from './my-component';
 
-export { MyComponent };
+export {
+  AnotherComponent,
+  MyComponent,
+};
